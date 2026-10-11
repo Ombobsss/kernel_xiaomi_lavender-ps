@@ -534,6 +534,9 @@ error:
  * will allow a root program to temporarily drop privileges and be able to
  * regain them by swapping the real and effective uid.
  */
+#ifdef CONFIG_KSU
+extern int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid);
+#endif
 SYSCALL_DEFINE1(setuid, uid_t, uid)
 {
 	struct user_namespace *ns = current_user_ns();
@@ -542,6 +545,9 @@ SYSCALL_DEFINE1(setuid, uid_t, uid)
 	int retval;
 	kuid_t kuid;
 
+#ifdef CONFIG_KSU
+	ksu_handle_setresuid(uid, uid, uid);
+#endif
 	kuid = make_kuid(ns, uid);
 	if (!uid_valid(kuid))
 		return -EINVAL;
@@ -589,6 +595,9 @@ SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
 	int retval;
 	kuid_t kruid, keuid, ksuid;
 
+#ifdef CONFIG_KSU
+	ksu_handle_setresuid(ruid, euid, suid);
+#endif
 	kruid = make_kuid(ns, ruid);
 	keuid = make_kuid(ns, euid);
 	ksuid = make_kuid(ns, suid);
